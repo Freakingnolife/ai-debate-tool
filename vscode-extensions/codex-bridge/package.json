@@ -1,0 +1,81 @@
+{
+  "name": "codex-bridge",
+  "displayName": "Codex Bridge for AI Debate Tool",
+  "description": "Bridge extension that integrates OpenAI Codex extension for AI debates",
+  "version": "0.1.0",
+  "publisher": "ai-debate-tool",
+  "engines": {
+    "vscode": "^1.104.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "codex-bridge.start",
+        "title": "Codex Bridge: Start Server"
+      },
+      {
+        "command": "codex-bridge.stop",
+        "title": "Codex Bridge: Stop Server"
+      },
+      {
+        "command": "codex-bridge.status",
+        "title": "Codex Bridge: Check Status"
+      },
+      {
+        "command": "codex-bridge.investigate",
+        "title": "Codex Bridge: Investigate Codex Extension"
+      }
+    ],
+    "configuration": {
+      "title": "Codex Bridge",
+      "properties": {
+        "codexBridge.port": {
+          "type": "number",
+          "default": 8765,
+          "description": "Port for the Codex Bridge HTTP server"
+        },
+        "codexBridge.autoStart": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically start bridge server on VS Code startup"
+        },
+        "codexBridge.integrationMode": {
+          "type": "string",
+          "default": "auto",
+          "enum": ["auto", "command", "api", "clipboard"],
+          "description": "How to integrate with Codex extension (auto-detect, command invocation, API, or clipboard)"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile",
+    "lint": "eslint src --ext ts",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^20.x",
+    "@types/vscode": "^1.104.0",
+    "@typescript-eslint/eslint-plugin": "^6.x",
+    "@typescript-eslint/parser": "^6.x",
+    "eslint": "^8.x",
+    "typescript": "^5.3.0",
+    "@vscode/vsce": "^2.x"
+  },
+  "dependencies": {
+    "clipboardy": "^4.0.0"
+  },
+  "extensionDependencies": [
+    "openai.chatgpt"
+  ]
+}

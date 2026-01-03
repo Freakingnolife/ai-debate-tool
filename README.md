@@ -275,11 +275,37 @@ Or use environment variables:
 
 ---
 
+## VS Code Extensions
+
+The AI Debate Tool includes VS Code extensions for automatic AI invocation.
+
+### Available Extensions
+
+| Extension | Description |
+|-----------|-------------|
+| **Copilot Bridge** | Exposes GitHub Copilot Language Model API |
+| **Codex Bridge** | Bridges OpenAI ChatGPT/Codex extension |
+
+### Installation
+
+```bash
+cd vscode-extensions/copilot-bridge  # or codex-bridge
+npm install
+npm run compile
+npm run package  # Creates .vsix file
+```
+
+Then install the `.vsix` file in VS Code: Extensions > ... > Install from VSIX
+
+See [vscode-extensions/README.md](vscode-extensions/README.md) for full documentation.
+
+---
+
 ## Roadmap
 
 - **v1.0.0**: Core library + CLI
-- **v1.1.0** (Current): MCP server integration
-- **v1.2.0** (Planned): VS Code extensions
+- **v1.1.0**: MCP server integration
+- **v1.2.0** (Current): VS Code extensions
 
 ---
 

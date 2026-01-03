@@ -1,0 +1,72 @@
+{
+  "name": "copilot-bridge",
+  "displayName": "Copilot Bridge for AI Debate Tool",
+  "description": "Bridge extension that exposes GitHub Copilot Language Model API for AI debates",
+  "version": "0.1.0",
+  "publisher": "ai-debate-tool",
+  "engines": {
+    "vscode": "^1.104.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "copilot-bridge.start",
+        "title": "Copilot Bridge: Start Server"
+      },
+      {
+        "command": "copilot-bridge.stop",
+        "title": "Copilot Bridge: Stop Server"
+      },
+      {
+        "command": "copilot-bridge.status",
+        "title": "Copilot Bridge: Check Status"
+      }
+    ],
+    "configuration": {
+      "title": "Copilot Bridge",
+      "properties": {
+        "copilotBridge.port": {
+          "type": "number",
+          "default": 8765,
+          "description": "Port for the Copilot Bridge HTTP server"
+        },
+        "copilotBridge.autoStart": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically start bridge server on VS Code startup"
+        },
+        "copilotBridge.preferredModel": {
+          "type": "string",
+          "default": "gpt-5-codex",
+          "enum": ["gpt-5-codex", "gpt-5", "claude-opus", "auto"],
+          "description": "Preferred Copilot model for AI debates"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile",
+    "lint": "eslint src --ext ts",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^20.x",
+    "@types/vscode": "^1.104.0",
+    "@typescript-eslint/eslint-plugin": "^6.x",
+    "@typescript-eslint/parser": "^6.x",
+    "eslint": "^8.x",
+    "typescript": "^5.3.0",
+    "@vscode/vsce": "^2.x"
+  },
+  "dependencies": {}
+}
