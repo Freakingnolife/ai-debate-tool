@@ -20,7 +20,7 @@ class DebateConfig:
     consensus_min: int = 75
 
     # Iterative Debate (v0.3.0)
-    target_consensus: int = 90
+    target_consensus: int = 85
     enable_iterative_mode: bool = False
     min_improvement_threshold: int = 5
     max_regression_tolerance: int = 10
@@ -98,7 +98,7 @@ def load_config(env_file: Optional[Path] = None) -> DebateConfig:
         max_rounds=_get_int("DEBATE_MAX_ROUNDS", 5),
         consensus_min=_get_int("DEBATE_CONSENSUS_MIN", 75),
         # Iterative Debate
-        target_consensus=_get_int("DEBATE_TARGET_CONSENSUS", 90),
+        target_consensus=_get_int("DEBATE_TARGET_CONSENSUS", 85),
         enable_iterative_mode=_get_bool("DEBATE_ENABLE_ITERATIVE", False),
         min_improvement_threshold=_get_int("DEBATE_MIN_IMPROVEMENT", 5),
         max_regression_tolerance=_get_int("DEBATE_MAX_REGRESSION", 10),

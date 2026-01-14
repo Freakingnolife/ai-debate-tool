@@ -57,8 +57,11 @@ class StreamingDebateOrchestrator:
         self.history = DebateHistoryManager() if enable_history else None
         self.enable_history = enable_history
 
-        # Get available providers
-        self.primary_provider, self.counter_provider = get_available_providers()
+        # Get available providers (now returns list for multi-model support)
+        providers = get_available_providers()
+        self.providers = providers  # Store all providers
+        self.primary_provider = providers[0]
+        self.counter_provider = providers[1] if len(providers) > 1 else providers[0]
 
     async def run_debate_streaming(
         self,
