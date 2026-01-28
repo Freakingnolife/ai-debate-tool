@@ -135,9 +135,18 @@ class StreamingDebateOrchestrator:
         # Calculate consensus
         yield StreamEvent(type=EventType.CONSENSUS, data={})
 
+        # Safety check: ensure results are not None before calculating consensus
+        if primary_result is None or counter_result is None:
+            yield StreamEvent.error(
+                message="One or both AI providers failed to respond",
+                perspective="orchestrator",
+                recoverable=False
+            )
+            return
+
         consensus = FastModerator.analyze(
-            {"score": primary_result.score, "response": primary_result.response},
-            {"score": counter_result.score, "response": counter_result.response}
+            {"score": primary_result.score or 75, "response": primary_result.response or ""},
+            {"score": counter_result.score or 75, "response": counter_result.response or ""}
         )
 
         yield StreamEvent.consensus(
@@ -257,8 +266,8 @@ class StreamingDebateOrchestrator:
             return
 
         # Create tasks for non-cached providers
-        tasks = []
-        task_info = []
+        # Map task objects to their role info for proper tracking
+        task_to_info = {}
 
         if not primary_done:
             task = asyncio.create_task(
@@ -268,8 +277,7 @@ class StreamingDebateOrchestrator:
                     primary_name
                 )
             )
-            tasks.append(task)
-            task_info.append(('primary', primary_name, primary_prompt))
+            task_to_info[task] = ('primary', primary_name, primary_prompt)
 
         if not counter_done:
             task = asyncio.create_task(
@@ -279,39 +287,49 @@ class StreamingDebateOrchestrator:
                     counter_name
                 )
             )
-            tasks.append(task)
-            task_info.append(('counter', counter_name, counter_prompt))
+            task_to_info[task] = ('counter', counter_name, counter_prompt)
+
+        tasks = list(task_to_info.keys())
 
         # Yield progress events while waiting
         progress_task = asyncio.create_task(self._emit_progress_events(
-            [name for _, name, _ in task_info]
+            [name for _, name, _ in task_to_info.values()]
         ))
 
         # Wait for tasks to complete and yield results
-        for coro in asyncio.as_completed(tasks):
-            result = await coro
+        for completed_task in asyncio.as_completed(tasks):
+            result = await completed_task
 
-            # Find which task completed
-            for i, (role, name, prompt) in enumerate(task_info):
-                if role == 'primary' and not primary_done:
-                    primary_done = True
-                    is_primary = True
-                    # Cache result
-                    if self.enable_cache and self.cache and result.success:
-                        self.cache.set(prompt, {
-                            'response': result.response,
-                            'score': result.score
-                        }, file_hash)
+            # Find the original task that completed
+            original_task = None
+            for task in task_to_info:
+                if task.done():
+                    try:
+                        # Check if this task's result matches
+                        if task.result() is result:
+                            original_task = task
+                            break
+                    except Exception:
+                        pass
+
+            # Fallback: find first remaining task if direct match fails
+            if original_task is None:
+                for task in task_to_info:
+                    original_task = task
                     break
-                elif role == 'counter' and not counter_done:
-                    counter_done = True
-                    is_primary = False
-                    if self.enable_cache and self.cache and result.success:
-                        self.cache.set(prompt, {
-                            'response': result.response,
-                            'score': result.score
-                        }, file_hash)
-                    break
+
+            if original_task is None:
+                continue
+
+            role, name, prompt = task_to_info.pop(original_task)
+            is_primary = (role == 'primary')
+
+            # Cache result if successful
+            if self.enable_cache and self.cache and result.success:
+                self.cache.set(prompt, {
+                    'response': result.response,
+                    'score': result.score
+                }, file_hash)
 
             if result.success:
                 yield (
@@ -334,9 +352,6 @@ class StreamingDebateOrchestrator:
                     result,
                     is_primary
                 )
-
-            # Remove completed task from info
-            task_info = [(r, n, p) for r, n, p in task_info if n != name]
 
         # Cancel progress task
         progress_task.cancel()
